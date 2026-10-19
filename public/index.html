@@ -49,19 +49,28 @@
 </main>
 <script src="/socket.io/socket.io.js"></script>
 <script>
-    const socket = io();
-    socket.on('chat-message', (data) => {
-        const mine = data.user === username.value;
-        data.mine = mine;
 
-        addMessage(data)
-    });
-
+    
+    
     const form = document.getElementById('form');
     const input = document.getElementById('input');
     const list = document.getElementById('messages');
     const username = document.getElementById('username');
     const title = document.getElementById('roomTitle');
+    
+    const socket = io();
+    socket.on('chat-message', (data) => {
+        const mine = data.user === username.value;
+        data.mine = mine;
+        
+        addMessage(data)
+    });
+
+    let currentRoom = 'general';
+
+    socket.on('connect', () => {
+        socket.emit('join-room', currentRoom)
+    });
 
     // Builds one message and adds it to the screen.
     // Uses textContent (not innerHTML) so nobody can inject HTML through a message.
@@ -98,10 +107,13 @@
     // Room switching (visual only for now)
     document.querySelectorAll('.room').forEach((btn) => {
         btn.addEventListener('click', () => {
-        document.querySelectorAll('.room').forEach((b) => b.removeAttribute('aria-current'));
-        btn.setAttribute('aria-current', 'true');
-        title.textContent = btn.firstChild.textContent.trim();
-        document.body.classList.remove('menu-open');
+            document.querySelectorAll('.room').forEach((b) => b.removeAttribute('aria-current'));
+            btn.setAttribute('aria-current', 'true');
+            title.textContent = btn.firstChild.textContent.trim();
+            document.body.classList.remove('menu-open');
+            currentRoom = btn.dataset.room
+            socket.emit('join-room', currentRoom)
+            list.replaceChildren();
         });
     });
 
