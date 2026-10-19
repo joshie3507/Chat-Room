@@ -57,13 +57,28 @@
     const list = document.getElementById('messages');
     const username = document.getElementById('username');
     const title = document.getElementById('roomTitle');
+
+    function markIsMine(message) {
+        
+        const mine = message.user === username.value;
+        message.mine = mine;
+
+        return message
+
+    }
     
     const socket = io();
+    socket.on('message-history', (history) => {
+        list.replaceChildren();
+        for (let message of history){
+            console.log(message)
+            addMessage(markIsMine(message));
+        }
+    })
+
     socket.on('chat-message', (data) => {
-        const mine = data.user === username.value;
-        data.mine = mine;
         
-        addMessage(data)
+        addMessage(markIsMine(data));
     });
 
     let currentRoom = 'general';

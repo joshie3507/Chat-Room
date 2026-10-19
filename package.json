@@ -19,7 +19,9 @@
   },
   "homepage": "https://github.com/joshie3507/Chat-Room#readme",
   "dependencies": {
+    "dotenv": "^18.0.8",
     "express": "^5.3.0",
+    "mysql2": "^3.24.6",
     "socket.io": "^4.8.4"
   }
 }
