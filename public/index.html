@@ -47,64 +47,69 @@
     <button type="submit">Send</button>
   </form>
 </main>
-
+<script src="/socket.io/socket.io.js"></script>
 <script>
-  const form = document.getElementById('form');
-  const input = document.getElementById('input');
-  const list = document.getElementById('messages');
-  const username = document.getElementById('username');
-  const title = document.getElementById('roomTitle');
+    const socket = io();
+    socket.on('chat-message', (data) => {
+        const mine = data.user === username.value;
+        data.mine = mine;
 
-  // Builds one message and adds it to the screen.
-  // Uses textContent (not innerHTML) so nobody can inject HTML through a message.
-  function addMessage({ user, text, time, mine }) {
-    const wrap = document.createElement('div');
-    wrap.className = 'msg new' + (mine ? ' mine' : '');
-
-    if (!mine) {
-      const who = document.createElement('span');
-      who.className = 'who';
-      who.textContent = user;
-      wrap.appendChild(who);
-    }
-    const bubble = document.createElement('div');
-    bubble.className = 'bubble';
-    bubble.textContent = text;
-    const stamp = document.createElement('time');
-    stamp.textContent = time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-    wrap.append(bubble, stamp);
-    list.appendChild(wrap);
-    list.scrollTop = list.scrollHeight;
-  }
-
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const text = input.value.trim();
-    if (!text) return;
-
-    // For now the message just appears locally.
-    // Later: send it to the server here, and call addMessage() from the
-    // "incoming message" event instead.
-    addMessage({ user: username.value || 'Anonymous', text, mine: true });
-    input.value = '';
-  });
-
-  // Room switching (visual only for now)
-  document.querySelectorAll('.room').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.room').forEach((b) => b.removeAttribute('aria-current'));
-      btn.setAttribute('aria-current', 'true');
-      title.textContent = btn.firstChild.textContent.trim();
-      document.body.classList.remove('menu-open');
+        addMessage(data)
     });
-  });
 
-  document.getElementById('menuBtn').addEventListener('click', () => {
-    document.body.classList.toggle('menu-open');
-  });
+    const form = document.getElementById('form');
+    const input = document.getElementById('input');
+    const list = document.getElementById('messages');
+    const username = document.getElementById('username');
+    const title = document.getElementById('roomTitle');
 
-  list.scrollTop = list.scrollHeight;
+    // Builds one message and adds it to the screen.
+    // Uses textContent (not innerHTML) so nobody can inject HTML through a message.
+    function addMessage({ user, text, time, mine }) {
+        const wrap = document.createElement('div');
+        wrap.className = 'msg new' + (mine ? ' mine' : '');
+
+        if (!mine) {
+        const who = document.createElement('span');
+        who.className = 'who';
+        who.textContent = user;
+        wrap.appendChild(who);
+        }
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        bubble.textContent = text;
+        const stamp = document.createElement('time');
+        stamp.textContent = time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        wrap.append(bubble, stamp);
+        list.appendChild(wrap);
+        list.scrollTop = list.scrollHeight;
+    }
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const text = input.value.trim();
+        if (!text) return;
+
+        socket.emit('chat-message', {'user': username.value, 'text': text})
+        input.value = '';
+    });
+
+    // Room switching (visual only for now)
+    document.querySelectorAll('.room').forEach((btn) => {
+        btn.addEventListener('click', () => {
+        document.querySelectorAll('.room').forEach((b) => b.removeAttribute('aria-current'));
+        btn.setAttribute('aria-current', 'true');
+        title.textContent = btn.firstChild.textContent.trim();
+        document.body.classList.remove('menu-open');
+        });
+    });
+
+    document.getElementById('menuBtn').addEventListener('click', () => {
+        document.body.classList.toggle('menu-open');
+    });
+
+    list.scrollTop = list.scrollHeight;
 </script>
 </body>
 </html>
