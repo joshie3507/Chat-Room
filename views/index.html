@@ -20,9 +20,8 @@
     <button class="room" data-room="gaming">Gaming</button>
     <button class="room" data-room="random">Random</button>
   </nav>
-  <label class="me">
-    Your name
-    <input id="username" type="text" maxlength="20" autocomplete="off">
+  <label class="me" id="username">
+    
   </label>
 </aside>
 
@@ -49,25 +48,30 @@
 </main>
 <script src="/socket.io/socket.io.js"></script>
 <script>
+    const socket = io();
 
+    let currentRoom = 'general';
+    let userId, username;
+    socket.on('identity', (user) => {
+        userId = user.userId;
+        document.querySelector("#username").textContent = user.username;
+    })
     
     
     const form = document.getElementById('form');
     const input = document.getElementById('input');
     const list = document.getElementById('messages');
-    const username = document.getElementById('username');
     const title = document.getElementById('roomTitle');
 
     function markIsMine(message) {
         
-        const mine = message.user === username.value;
+        const mine = message.senderId === userId;
         message.mine = mine;
 
         return message
 
     }
     
-    const socket = io();
     socket.on('message-history', (history) => {
         list.replaceChildren();
         for (let message of history){
@@ -81,7 +85,6 @@
         addMessage(markIsMine(data));
     });
 
-    let currentRoom = 'general';
 
     socket.on('connect', () => {
         socket.emit('join-room', currentRoom)
@@ -115,7 +118,7 @@
         const text = input.value.trim();
         if (!text) return;
 
-        socket.emit('chat-message', {'user': username.value, 'text': text})
+        socket.emit('chat-message', {'text': text})
         input.value = '';
     });
 

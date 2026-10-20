@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chatroom | Log in</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+
+<main class="card">
+  <header class="card-top">
+    <h1>Chatroom</h1>
+    <p>Log in to join the conversation</p>
+  </header>
+
+  <form id="authForm" novalidate>
+    <div class="field">
+      <label for="username">Username</label>
+      <input id="username" name="username" type="text" maxlength="20" autocomplete="username" required>
+    </div>
+
+    <div class="field">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" maxlength="72" autocomplete="current-password" required>
+      <span class="hint">At least 8 characters</span>
+    </div>
+
+    <div id="message" class="message" role="alert" aria-live="polite"></div>
+
+    <div class="actions">
+      <button type="submit" id="loginBtn" class="btn primary">Log in</button>
+      <a href="register.html" class="btn secondary">Create account</a>
+    </div>
+  </form>
+</main>
+
+<script src="js/showMessage.js"></script>
+<script>
+  // Your job:
+  // 1. Log in: on form submit, preventDefault, then fetch POST to /login with a JSON body.
+  //    If response.ok, send the browser to "/". Otherwise show the error in #message.
+  // 2. Use textContent (not innerHTML) when showing messages.
+  // 3. Disable the button while the request is in flight, and re-enable afterwards.
+  // (Creating accounts now lives on register.html.)
+  const form = document.querySelector('form');
+  const submitButton = document.querySelector('#loginBtn');
+
+  form.addEventListener('submit', async (event) =>{
+    event.preventDefault();
+
+    const username = document.querySelector('#username').value.trim();
+    const password = document.querySelector('#password').value;
+
+
+    if (!username || !password) {
+      showMessage("Please fill in all fields", 'error');
+      return;
+    }
+
+    submitButton.disabled = true;
+
+    let response;
+    try {
+      response = await fetch('/login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({username: username, password: password})
+      });
+    } catch (e) {
+      console.error(e);
+      showMessage("Error reaching server", 'error')
+      return;
+    }finally {
+      submitButton.disabled = false;
+    }
+
+    try {
+    if (!response.ok){
+      showMessage(await response.json(), 'error');
+      return;
+    }
+  } catch {
+    showMessage("problem reaching the server", 'error')
+    return;
+  }
+
+    window.location.replace('/');
+
+  })
+</script>
+</body>
+</html>

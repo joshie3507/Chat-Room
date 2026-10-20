@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chatroom | Create account</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+
+<main class="card">
+  <header class="card-top">
+    <h1>Create your account</h1>
+    <p>Pick a username and password to start chatting</p>
+  </header>
+
+  <form id="registerForm" novalidate>
+    <div class="field">
+      <label for="username">Username</label>
+      <input id="username" name="username" type="text" maxlength="20" autocomplete="username" required>
+      <span class="hint">Up to 20 characters</span>
+    </div>
+
+    <div class="field">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" maxlength="72" autocomplete="new-password" required>
+      <span class="hint">8 to 72 characters</span>
+    </div>
+
+    <div class="field">
+      <label for="confirm">Confirm password</label>
+      <input id="confirm" name="confirm" type="password" maxlength="72" autocomplete="new-password" required>
+    </div>
+
+    <div id="message" class="message" role="alert" aria-live="polite"></div>
+
+    <div class="actions">
+      <button type="submit" id="registerBtn" class="btn primary">Create account</button>
+      <a href="login.html" class="btn secondary">I already have an account</a>
+    </div>
+  </form>
+</main>
+
+
+<script src="js/showMessage.js"></script>
+<script>
+  // Your job:
+  // 1. On form submit, preventDefault.
+  // 2. Check the two password fields match BEFORE sending anything.
+  //    If they don't, show a message and stop. (This is only a convenience.
+  //    The server still does the real validation.)
+  // 3. fetch POST to /register with a JSON body of just username and password.
+  //    Never send the confirm field.
+  // 4. On success (201), show a success message, then send the browser to /login.html.
+  //    On failure, read the JSON reply and show it in #message (409 means name taken).
+  // 5. Use textContent (not innerHTML) when showing messages, and disable the
+  //    button while the request is in flight.
+  const form = document.querySelector('form');
+
+  
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+
+    const username = document.querySelector('#username').value.trim();
+    const password = document.querySelector('#password').value;
+    const confirmInput = document.querySelector('#confirm').value;
+    const submitButton = document.querySelector('#registerBtn');
+
+    submitButton.disabled= true;
+    
+
+    if (!username || !password || !confirmInput){
+      showMessage("Username, password or password confirmation missing", 'error');
+      submitButton.disabled= false;
+
+      return;
+    }
+
+    if (password !== confirmInput) {
+      showMessage("Passwords must match", 'error');
+      submitButton.disabled= false;
+      return;
+    }
+
+
+    let body, result;
+    try{
+      result = await fetch('/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({username: username, password: password})
+    });
+
+    body = await result.json();
+  }catch (e) {
+    showMessage("Counldn't reach the server", 'error');
+    return;
+  } finally {
+    submitButton.disabled= false;
+  }
+
+
+    if (result.status !== 201) {
+      showMessage(body, 'error');
+      submitButton.disabled= false;
+      return;
+    }
+
+    showMessage("Account Created Successfully.  Redirecting to login", 'success');
+
+    submitButton.disabled= false;
+
+    setTimeout(() => {window.location.replace('/login.html')}, 2000)
+
+
+
+  })
+</script>
+</body>
+</html>
